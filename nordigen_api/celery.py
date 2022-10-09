@@ -1,7 +1,9 @@
+from __future__ import absolute_import, unicode_literals
+import os
 from celery import Celery
 
-app = Celery('tasks', broker='pyamqp://guest@localhost//')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'nordigen_api.settings')
 
-@app.task
-def add(x, y):
-    return x + y
+app = Celery('nordigen_api')
+app.config_from_object('django.conf:settings', namespace='CELERY')
+app.autodiscover_tasks()

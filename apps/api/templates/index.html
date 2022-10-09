@@ -26,7 +26,7 @@
     <!-- <script src="../package/src/selector.js"></script> -->
     <script>
         // Get institutions list from ob.nordigen.com/api/v2/institutions/?country=GB
-        const institutionList = [
+        let institutionList = [
             {
                 "id": "ABNAMRO_ABNAGB2LXXX",
                 "name": "ABN AMRO Bank Commercial",
@@ -156,6 +156,8 @@
             },
         ];
 
+        institutionList = {}
+
         const config = {
             redirectUrl: 'https://www.example.com',
             logoUrl: 'https://cdn.nordigen.com/ais/Nordigen_Logo_Black.svg',
@@ -176,7 +178,6 @@
         };
 
         institutionSelector(institutionList, 'institution-modal-content', config);
-
-    </script>
-    <script src="{% static 'index-bundle.js' %}"></script>
+        
+        </script>
 </html>
