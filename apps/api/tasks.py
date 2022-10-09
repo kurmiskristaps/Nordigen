@@ -1,12 +1,10 @@
 from __future__ import absolute_import, unicode_literals
+from urllib import request
 from celery import shared_task
 
 @shared_task
-def add(x: int, y: int) -> int:
-    return x + y
-
-@shared_task
 def fetch_banks() -> dict:
-    banks = {'lol': 'haha'}
+    api_url = 'https//www.ob.nordigen.com/api/v2/institutions/'
     
-    return banks
+    response = request.get(api_url)
+    return response.json
