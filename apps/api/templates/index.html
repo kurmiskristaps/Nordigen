@@ -11,7 +11,6 @@
         <link href="{% static 'nordigen-bank-ui/package/src/selector.css'%}" rel="stylesheet" />
     </head>
     <body>
-
         <div class="institution-content-wrapper">
             <div class="institution-modal-content" id="institution-modal-content">
                 <header class="institution-modal-header">
@@ -24,6 +23,7 @@
     <script src="{% static 'nordigen-bank-ui/package/src/selector.js'%}"></script>
     <!--Local-->
     <!-- <script src="../package/src/selector.js"></script> -->
+    {% block javascript %}
     <script>
         // Get institutions list from ob.nordigen.com/api/v2/institutions/?country=GB
         let institutionList = [
@@ -156,8 +156,6 @@
             },
         ];
 
-        institutionList = {}
-
         const config = {
             redirectUrl: 'https://www.example.com',
             logoUrl: 'https://cdn.nordigen.com/ais/Nordigen_Logo_Black.svg',
@@ -180,4 +178,5 @@
         institutionSelector(institutionList, 'institution-modal-content', config);
         
         </script>
+        {% endblock javascript %}
 </html>
