@@ -18,3 +18,4 @@ wcwidth==0.2.5
 redis
 psycopg2-binary>=2.8
 requests
+python-dotenv

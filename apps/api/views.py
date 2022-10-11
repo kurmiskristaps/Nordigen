@@ -4,16 +4,25 @@ from django.http import HttpResponse
 # from tasks import fetch_banks
 import requests
 
+from nordigen_api.settings import USER_SECRET_ID, USER_SECRET_KEY
+
 def index(request: str) -> str:
-    return render(request, 'index.html', {'banks': get_banks()})
+    token = get_token()
 
-def get_banks() -> json:
-    # banks = fetch_banks()
-    api_url = 'https://ob.nordigen.com/api/v2/institutions'
+    return render(request, 'index.html', {'banks': get_banks(token)})
+
+def get_banks(token: str) -> json:
+    api_url = 'https://ob.nordigen.com/api/v2/institutions/'
     
-    response = requests.get(api_url, headers = {'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjY1NTIwMjI4LCJqdGkiOiI5ZjZkYWU2MzNlYTM0MmJhYWIzOWUzYjg0NTgwZGIxNCIsImlkIjoxNjkxNSwic2VjcmV0X2lkIjoiYTQ3MTJmMWQtNTU1Ny00NzU1LWE1OTgtNjA1OTUxYWM5OTY0IiwiYWxsb3dlZF9jaWRycyI6WyIwLjAuMC4wLzAiLCI6Oi8wIl19.wHwudZetMTe_vj9auNkWuv0QKXPbQBXhZkeMNBLl2As'})
+    response = requests.get(api_url, headers = {'Authorization': 'Bearer ' + token})
+    response_json = json.dumps(response.text)
 
-    print(response.text)
+    return response_json
 
-    return response.content
-    # return banks
+def get_token() -> str:
+    api_url = 'https://ob.nordigen.com/api/v2/token/new/'
+
+    response = requests.post(api_url, data = {'secret_id': USER_SECRET_ID, 'secret_key': USER_SECRET_KEY})
+    response_json = response.json()
+
+    return response_json['access']
