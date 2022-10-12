@@ -55,9 +55,8 @@
                 institution.addEventListener("click", (e) => {
                     e.preventDefault();
                     const aspspId = e.currentTarget.getAttribute('data-institution');
-                    // aspspId = 'SANDBOXFINANCE_SFIN0000';
-                    // custom redirect
-                    window.location = `http://127.0.0.1/${aspspId}`;
+ 
+                    window.location = `auth/${aspspId}`;
                 })
             })
         });
