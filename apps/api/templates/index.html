@@ -6,8 +6,6 @@
         <meta charset="utf-8" />
         <title>Nordigen Bank Selector UI</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <!-- <link href="=../node_modules/nordigen-bank-ui/package/src/selector.min.css" rel="stylesheet" /> -->
-        <!--Local-->
         <link href="{% static 'nordigen-bank-ui/package/src/selector.css'%}" rel="stylesheet" />
     </head>
     <body>
@@ -21,13 +19,12 @@
     </body>
 
     <script src="{% static 'nordigen-bank-ui/package/src/selector.js'%}"></script>
-    <!--Local-->
-    <!-- <script src="../package/src/selector.js"></script> -->
-    {% block javascript %}
+    {{ banks|json_script:"my_array" }}
     <script type="text/javascript">
-        // Get institutions list from ob.nordigen.com/api/v2/institutions/?country=GB
-    
-        let institutionList = {{ banks|safe }};
+        //TODO: fix quote escaping, otherwise this is dirty
+        let institutionList = document.getElementById('my_array').textContent;
+        institutionList = JSON.parse(institutionList);
+        institutionList = JSON.stringify(institutionList);
         institutionList = JSON.parse(institutionList);
 
         const config = {
@@ -49,8 +46,27 @@
             }
         };
 
-        institutionSelector(institutionList, 'institution-modal-content', config);
+        new institutionSelector(institutionList, 'institution-modal-content', config);
         
+        const container = document.querySelector(".institution-container");
+        const observer = new MutationObserver((event) => {
+            const institutions = Array.from(document.querySelectorAll('.ob-list-institution > a'));
+            institutions.forEach((institution) => {
+                institution.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    const aspspId = e.currentTarget.getAttribute('data-institution');
+                    // aspspId = 'SANDBOXFINANCE_SFIN0000';
+                    // custom redirect
+                    window.location = `http://127.0.0.1/${aspspId}`;
+                })
+            })
+        });
+
+        const conf = {
+            childList: true
+        };
+        observer.observe(container, conf);
+
+
         </script>
-        {% endblock javascript %}
 </html>
