@@ -14,7 +14,7 @@
                 "9000"
             ],
             "django": true,
-            "justMyCode": true
+            "justMyCode": false
         }
     ]
 }
