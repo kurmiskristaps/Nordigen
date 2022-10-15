@@ -19,7 +19,7 @@ def index(request: str):
         institutions = client.institution.get_institutions()
     except Exception:
         return render(request, 'error.html')
-        
+
     return render(request, 'index.html', {'banks': institutions})
 
 
@@ -71,4 +71,4 @@ def details(request: str):
     except Exception:
         return render(request, 'error.html')
 
-    return HttpResponse(accounts_data)
+    return render(request, 'account.html', {'account_data': accounts_data})

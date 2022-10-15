@@ -19,7 +19,8 @@
   },
   "homepage": "https://github.com/kurmiskristaps/Nordigen#readme",
   "dependencies": {
-    "nordigen-bank-ui": "^1.4.0"
+    "nordigen-bank-ui": "^1.4.0",
+    "vue": "^3.2.41"
   },
   "devDependencies": {
     "webpack": "^5.74.0",
