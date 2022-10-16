@@ -26,7 +26,7 @@ services:
             - django
             - redis
     pgdb:
-        image: postgres
+        image: library/postgres:15-alpine
         container_name: pgdb
         environment:
             - POSTGRES_DB=postgres

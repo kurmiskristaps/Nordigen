@@ -1,8 +1,4 @@
 {
-  "name": "nordigenmd",
-  "version": "1.0.0",
-  "description": "Homework task for nurdigen application",
-  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack --mode development --watch"
@@ -19,8 +15,7 @@
   },
   "homepage": "https://github.com/kurmiskristaps/Nordigen#readme",
   "dependencies": {
-    "nordigen-bank-ui": "^1.4.0",
-    "vue": "^3.2.41"
+    "nordigen-bank-ui": "^1.4.0"
   },
   "devDependencies": {
     "webpack": "^5.74.0",

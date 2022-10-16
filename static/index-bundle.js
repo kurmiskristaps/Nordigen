@@ -15,7 +15,7 @@
   \*************************/
 /***/ (() => {
 
-eval("function component() {\n    const element = document.createElement('div');\n    element.innerHTML = 'Hello webpack';\n    return element;\n  }\n  document.body.appendChild(component());\n\n\n//# sourceURL=webpack://nordigenmd/./assets/index.js?");
+eval("function component() {\n    const element = document.createElement('div');\n    element.innerHTML = 'Hello webpack';\n    return element;\n  }\n  document.body.appendChild(component());\n\n\n//# sourceURL=webpack:///./assets/index.js?");
 
 /***/ })
 

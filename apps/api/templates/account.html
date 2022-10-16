@@ -1,13 +1,26 @@
+{% load static %}  
+
 <!doctype html>
 <html lang="en">
     <head>
+        <link rel="stylesheet" type="text/css" href="{% static 'bootstrap/css/bootstrap-grid.min.css' %}" >
+        <link rel="stylesheet" type="text/css" href="{% static 'bootstrap/css/bootstrap.min.css' %}" >
         <title>
             Account details  
         </title>
     </head>
     <body>
-        <div>
-            <script src="{% static 'index-bundle.js' %}"></script>
-        </div>
+        <script src="{% static 'bootstrap/js/jquery.min.js' %}"></script>
+        <script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+        <h2>
+            Get data for one of your accounts:
+        </h2>
+        {% for account in accounts %}
+        <span>
+            <button id="{{ account.id }}" class="btn btn-large btn-primary col-sm-3 m-2">{{ account.details.account.name }}</button>
+        </span>
+        {% endfor %}
+        <div class="col-12 mt-4 border-bottom"></div>
+        
     </body>
 </html>

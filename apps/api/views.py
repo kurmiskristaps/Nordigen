@@ -51,6 +51,7 @@ def details(request: str):
 
         request.session['ref'] = request.GET.get('ref')
 
+        request.session['accounts'] = accounts
         accounts_data = []
 
         for id in accounts['accounts']:
@@ -62,13 +63,15 @@ def details(request: str):
 
             accounts_data.append(
                 {
-                    "metadata": metadata,
+                    "id": id,
+                    # "metadata": metadata,
                     "details": details,
-                    "balances": balances,
-                    "transactions": transactions,
+                    # "balances": balances,
+                    # "transactions": transactions,
                 }
             )
+            
     except Exception:
         return render(request, 'error.html')
 
-    return render(request, 'account.html', {'account_data': accounts_data})
+    return render(request, 'account.html', {'accounts': accounts_data})
