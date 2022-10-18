@@ -1,10 +1,23 @@
 from __future__ import absolute_import, unicode_literals
-from urllib import request
+from nordigen.api import AccountApi
+from nordigen import NordigenClient
 from celery import shared_task
 
-@shared_task
-def fetch_banks() -> dict:
-    api_url = 'https//www.ob.nordigen.com/api/v2/institutions/'
-    
-    response = request.get(api_url)
-    return response.json
+
+from nordigen_api.settings import USER_SECRET_ID, USER_SECRET_KEY
+
+client = NordigenClient(secret_id = USER_SECRET_ID, secret_key = USER_SECRET_KEY)
+
+@shared_task(bind=True)
+async def get_transactions(self, account_id: int, token: str):
+    client.token = token
+    account = AccountApi(client, account_id)
+    response = account.get_transactions()
+    return response
+
+@shared_task(bind=True)
+async def get_balances(self, account_id: int, token: str):
+    client.token = token
+    account = AccountApi(client, account_id)
+    response = account.get_balances()
+    return response

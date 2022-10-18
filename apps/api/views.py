@@ -1,8 +1,10 @@
-import json
+from multiprocessing.pool import AsyncResult
 from django.shortcuts import render
-from django.http import HttpResponse
 from nordigen import NordigenClient
 from uuid import uuid4
+from .tasks import get_transactions, get_balances
+from django.http import JsonResponse
+from celery.result import AsyncResult
 from django.shortcuts import redirect
 from nordigen_api.settings import USER_SECRET_ID, USER_SECRET_KEY
 
@@ -40,6 +42,7 @@ def auth(request: str, institution_id: str):
         return redirect(link)
     return redirect('/index')
 
+
 def details(request: str):
     if len(request.session['req_id']) == 0:
         return redirect('/index')
@@ -55,9 +58,12 @@ def details(request: str):
         accounts_data = []
 
         for id in accounts['accounts']:
+            task_ids = {}
+
             account = client.account_api(id)
             metadata = account.get_metadata()
-            transactions = account.get_transactions()
+            task_ids['transactions'] = get_transactions.delay(id, token_data['access'])
+            task_ids['balances'] = get_balances.delay(id, token_data['access'])
             details = account.get_details()
             balances = account.get_balances()
 
@@ -68,10 +74,19 @@ def details(request: str):
                     "details": details,
                     # "balances": balances,
                     # "transactions": transactions,
+                    'task_ids': task_ids
                 }
             )
             
-    except Exception:
+    except Exception as e:
+        print('%s' % str(e))
         return render(request, 'error.html')
 
     return render(request, 'account.html', {'accounts': accounts_data})
+
+def check_status(request):
+    task_id = request.GET.get('task_id')
+    if task_id:
+        async_result = AsyncResult(id=task_id)
+        return JsonResponse({'finish': async_result.get()})
+    return JsonResponse({'error': 'No task id provided'})
