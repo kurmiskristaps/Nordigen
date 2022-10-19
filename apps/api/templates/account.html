@@ -16,10 +16,10 @@
     <body class="col-12">
         <div class="mt-4 block">
             <div>
-                <span>
+                <h2>
                     Get data for one of your accounts:
-                </span>
-                <select id="account-selector" class="select-lg mb-3 float-right">
+                </h2>
+                <select id="account-selector" class="select ml-16">
                     <option value="" selected>Select account</option>
                     {% for account in accounts %}
                     <option
@@ -29,21 +29,24 @@
                 {% endfor %}
                 </select>
             </div>
+
+            <div class="col-12 my-4 border-bottom"></div>
             
             <div>
-                {% for account in accounts %}
                 <button 
-                    id="account{{ account.id }}" 
-                    class="get-data-button btn btn-large btn-primary col-sm-4 m-2"
-                    account-id={{ account.id }}
-                    task-id={{ account.task_ids.transactions }}
-                    data-url="{% url 'check-status' %}">
-                    {{ account.details.account.name }}
+                    id="button-transactions" 
+                    class="get-data-button btn btn-large btn-primary col-sm-2 m-2"
+                    data-url="{% url 'get-transactions' %}">
+                    Get transactions
                 </button>
-                {% endfor %}
+                <button 
+                    id="button-balances" 
+                    class="get-data-button btn btn-large btn-primary col-sm-2 m-2"
+                    data-url="{% url 'get-balances' %}">
+                    Get balances
+                </button>
             </div>
         </div>
-        <div class="col-12 my-4 border-bottom"></div>
         <div>
             <h3>Account data</h3>
             {% for account in accounts %}

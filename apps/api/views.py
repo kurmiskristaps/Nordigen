@@ -2,7 +2,7 @@ from multiprocessing.pool import AsyncResult
 from django.shortcuts import render
 from nordigen import NordigenClient
 from uuid import uuid4
-from .tasks import get_transactions, get_balances
+from .tasks import fetch_transactions, fetch_balances
 from django.http import JsonResponse
 from celery.result import AsyncResult
 from django.shortcuts import redirect
@@ -58,23 +58,15 @@ def details(request: str):
         accounts_data = []
 
         for id in accounts['accounts']:
-            task_ids = {}
-
             account = client.account_api(id)
             metadata = account.get_metadata()
-            task_ids['transactions'] = get_transactions.delay(id, token_data['access'])
-            task_ids['balances'] = get_balances.delay(id, token_data['access'])
             details = account.get_details()
-            balances = account.get_balances()
 
             accounts_data.append(
                 {
                     "id": id,
-                    # "metadata": metadata,
+                    "metadata": metadata,
                     "details": details,
-                    # "balances": balances,
-                    # "transactions": transactions,
-                    'task_ids': task_ids
                 }
             )
             
@@ -83,6 +75,22 @@ def details(request: str):
         return render(request, 'error.html')
 
     return render(request, 'account.html', {'accounts': accounts_data})
+
+async def get_transactions(account_id: str) -> JsonResponse:
+    if account_id == False:
+        return JsonResponse({'error': 'No account id provided'})
+    task = fetch_transactions.delay(account_id, token_data['access'])
+    
+    return JsonResponse({'finish': task.get()})
+
+
+async def get_balances(account_id: str) -> JsonResponse:
+    if account_id == False:
+        return JsonResponse({'error': 'No account id provided'})
+    task = fetch_balances.delay(account_id, token_data['access'])
+    
+    return JsonResponse({'finish': task.get()})
+
 
 def check_status(request):
     task_id = request.GET.get('task_id')
