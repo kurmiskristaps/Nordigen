@@ -1,9 +1,7 @@
-from multiprocessing.pool import AsyncResult
-from django.shortcuts import render
-from .tasks import fetch_transactions, fetch_balances
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
-from celery.result import AsyncResult
-from django.shortcuts import redirect
+from django.core.exceptions import ValidationError
+from .tasks import fetch_transactions, fetch_balances, fetch_details, fetch_premium_transactions
 from nordigen import NordigenClient
 from nordigen_api.settings import USER_SECRET_ID, USER_SECRET_KEY
 from uuid import uuid4
@@ -72,22 +70,56 @@ def details(request: str):
 
     return render(request, 'account.html', {'accounts': accounts_data})
 
+def validate_account_id(account_id):
+    if not account_id or not isinstance(account_id, str):
+        raise ValidationError('No account id provided')
+
+def validate_transaction_variables(account_id, date_from, date_to, country):
+    validate_account_id(account_id)
+
 def get_transactions(request):
     account_id = request.GET.get('account_id')
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+    country = request.GET.get('country')
+    
+    try:
+        validate_transaction_variables(account_id, date_from, date_to, country)
 
-    if account_id == False:
-        return JsonResponse({'error': 'No account id provided'})
-
-    task = fetch_transactions.delay(account_id, request.session['token']['access'])
+        if country:
+            task = fetch_premium_transactions.delay(account_id, request.session['token']['access'])
+        else:
+            task = fetch_transactions.delay(account_id, request.session['token']['access'])
+    except ValidationError as e:
+        return JsonResponse({'error': e.message})
+    except Exception:
+        return JsonResponse({'error': 'Something went wrong'})
 
     return JsonResponse({'finish': task.get()})
 
 
 def get_balances(request) -> JsonResponse:
     account_id = request.GET.get('account_id')
-    
-    if account_id == False:
-        return JsonResponse({'error': 'No account id provided'})
+    validate_account_id(account_id)
+
     task = fetch_balances.delay(account_id, request.session['token']['access'])
+    
+    return JsonResponse({'finish': task.get()})
+
+
+def get_details(request) -> JsonResponse:
+    account_id = request.GET.get('account_id')
+    validate_account_id(account_id)
+
+    task = fetch_details.delay(account_id, request.session['token']['access'])
+    
+    return JsonResponse({'finish': task.get()})
+
+
+def get_premium_transactions(request) -> JsonResponse:
+    account_id = request.GET.get('account_id')
+    validate_account_id(account_id)
+
+    task = fetch_premium_transactions.delay(account_id, request.session['token']['access'])
     
     return JsonResponse({'finish': task.get()})

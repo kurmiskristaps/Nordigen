@@ -30,7 +30,7 @@
                 </select>
             </div>
 
-            <div class="col-12 my-4 border-bottom"></div>
+            <div class="col-12 mt-4 mb-2 border-bottom"></div>
             
             <div>
                 <button 
@@ -44,6 +44,12 @@
                     class="get-data-button btn btn-large btn-primary col-sm-2 m-2"
                     data-url="{% url 'get-balances' %}">
                     Get balances
+                </button>
+                <button 
+                    id="button-details" 
+                    class="get-data-button btn btn-large btn-primary col-sm-2 m-2"
+                    data-url="{% url 'get-details' %}">
+                    Get details
                 </button>
             </div>
         </div>
