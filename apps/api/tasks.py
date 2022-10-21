@@ -13,7 +13,7 @@ client = NordigenClient(
 )
 token_data = client.generate_token()
 
-accounts = []
+accounts = {}
 
 def initialize_session(institution_id):
     return client.initialize_session(
