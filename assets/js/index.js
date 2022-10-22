@@ -4,23 +4,25 @@ let date_to = null;
 let country = null;
 
 $(function() {
-    $('.datepickers').datetimepicker({
-        viewMode: 'days',
-        format: 'DD/MM/YYYY'
-    });
-
     $('#account-selector').on('change', function(){    
         selected_account = $(this).val();
     });
 
-    $('#date_from').on('change', function(){    
-        date_from = $(this).val({
-            format: 'DD/MM/YYYY'
-        });
+    $('.datepickers').datetimepicker({
+        viewMode: 'days',
+        format: 'YYYY-MM-DD'
+    });
+
+    $('#date-from-input').on('input', function(){ 
+        if ($(this).val() != '') {
+            date_from = $(this).val();
+        }   
     });    
 
-    $('#date_to').on('change', function(){    
-        date_to = $(this).val();
+    $('#date-to-input').on('change', function(){    
+        if ($(this).val() != '') {
+            date_to = $(this).val();
+        } 
     });    
 
     $('#country-input').on('change', function(){    

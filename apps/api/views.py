@@ -71,12 +71,35 @@ def details(request: str):
 
     return render(request, 'account.html', {'accounts': accounts_data})
 
+
 def validate_account_id(account_id):
     if not account_id or not isinstance(account_id, str):
         raise ValidationError('No account id provided')
 
+
+def validate_date(date):
+    if date and not isinstance(date, str):
+        raise ValidationError('Invalid date')
+
+
+def validate_dates(date_from, date_to):
+    for date in (date_from, date_to):
+        validate_date(date)
+    if date_from and date_to:
+        if date_from > date_to:
+            raise ValidationError('Invalid date')
+
+
+def validate_country(country):
+    if country and (not isinstance(country, str) or len(country) != 2):
+        raise ValidationError('Invalid country format')
+
+
 def validate_transaction_variables(account_id, date_from, date_to, country):
     validate_account_id(account_id)
+    validate_dates(date_from, date_to)
+    validate_country(country)
+    
 
 def get_transactions(request):
     account_id = request.GET.get('account_id')
@@ -87,16 +110,21 @@ def get_transactions(request):
     try:
         validate_transaction_variables(account_id, date_from, date_to, country)
 
-        print(date_from)
-        print(date_to)
+        query_params = {}
+        
+        if date_from:
+            query_params.update({'date_from': date_from})
+        if date_to:
+            query_params.update({'date_to': date_to})
 
         if country:
-            task = fetch_premium_transactions.delay(account_id, request.session['token']['access'])
+            query_params.update({'country': country})
+            task = fetch_premium_transactions.delay(account_id, query_params, request.session['token']['access'])
         else:
-            task = fetch_transactions.delay(account_id, request.session['token']['access'])
+            task = fetch_transactions.delay(account_id, query_params, request.session['token']['access'])
     except ValidationError as e:
         return JsonResponse({'error': e.message})
-    except Exception:
+    except Exception as ex:
         return JsonResponse({'error': 'Something went wrong'})
 
     return JsonResponse({'finish': task.get()})
@@ -116,14 +144,5 @@ def get_details(request) -> JsonResponse:
     validate_account_id(account_id)
 
     task = fetch_details.delay(account_id, request.session['token']['access'])
-    
-    return JsonResponse({'finish': task.get()})
-
-
-def get_premium_transactions(request) -> JsonResponse:
-    account_id = request.GET.get('account_id')
-    validate_account_id(account_id)
-
-    task = fetch_premium_transactions.delay(account_id, request.session['token']['access'])
     
     return JsonResponse({'finish': task.get()})

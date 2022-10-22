@@ -43,16 +43,15 @@
                     data-url="{% url 'get-transactions' %}">
                     Get transactions
                 </button>
-                
-                <div class="input-group date datepickers col-sm-3 float-right m-2" id="date_to" data-target-input="nearest">
-                    <input type="text" placeholder="to" class="form-control datetimepicker-input" data-target="#date_to"/>
-                    <div class="input-group-append" data-target="#date_to" data-toggle="datetimepicker">
+                <div class="input-group date datepickers col-sm-3 float-right m-2" id="date-to" data-target-input="nearest">
+                    <input id="date-to-input" type="text" placeholder="to" class="form-control datetimepicker-input" data-target="#date-to"/>
+                    <div class="input-group-append" data-target="#date-to" data-toggle="datetimepicker">
                       <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                     </div>
                 </div>
-                <div class="input-group date datepickers col-sm-3 float-right m-2" id="date_from" data-target-input="nearest">
-                    <input type="text" placeholder="from" class="form-control datetimepicker-input" data-target="#date_from"/>
-                    <div class="input-group-append" data-target="#date_from" data-toggle="datetimepicker">
+                <div class="input-group date datepickers col-sm-3 float-right m-2" id="date-from" data-target-input="nearest">
+                    <input id="date-from-input" type="text" placeholder="from" class="form-control datetimepicker-input" data-target="#date-from"/>
+                    <div class="input-group-append" data-target="#date-from" data-toggle="datetimepicker">
                       <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                     </div>
                 </div>
