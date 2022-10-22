@@ -87,7 +87,7 @@ def validate_dates(date_from, date_to):
         validate_date(date)
     if date_from and date_to:
         if date_from > date_to:
-            raise ValidationError('Invalid date')
+            raise ValidationError('Date from cannot be larger than date to')
 
 
 def validate_country(country):
@@ -127,7 +127,7 @@ def get_transactions(request):
     except Exception as ex:
         return JsonResponse({'error': 'Something went wrong'})
 
-    return JsonResponse({'finish': task.get()})
+    return JsonResponse(task.get())
 
 
 def get_balances(request) -> JsonResponse:
@@ -136,7 +136,7 @@ def get_balances(request) -> JsonResponse:
 
     task = fetch_balances.delay(account_id, request.session['token']['access'])
     
-    return JsonResponse({'finish': task.get()})
+    return JsonResponse(task.get())
 
 
 def get_details(request) -> JsonResponse:
@@ -145,4 +145,4 @@ def get_details(request) -> JsonResponse:
 
     task = fetch_details.delay(account_id, request.session['token']['access'])
     
-    return JsonResponse({'finish': task.get()})
+    return JsonResponse(task.get())
