@@ -23,6 +23,7 @@ def fetch_balances(account_id: str, token: str) -> AsyncResult:
 def fetch_details(account_id: str, token: str) -> AsyncResult:
     url = 'https://ob.nordigen.com/api/v2/accounts/' + account_id + '/details'
     headers = {'accept': 'application/json', 'Authorization': 'Bearer ' + token}
+    data = {'accept': 'application/json', 'Authorization': 'Bearer ' + token}
     
     return requests.get(url, headers=headers).json()
 

@@ -45,6 +45,7 @@ def details(request: str):
         return redirect('/index')
 
     try:
+        print('Requisition_id = ' + request.session['req_id'])
         accounts = client.requisition.get_requisition_by_id(
             requisition_id = request.session['req_id']
        )
@@ -85,6 +86,9 @@ def get_transactions(request):
     
     try:
         validate_transaction_variables(account_id, date_from, date_to, country)
+
+        print(date_from)
+        print(date_to)
 
         if country:
             task = fetch_premium_transactions.delay(account_id, request.session['token']['access'])
