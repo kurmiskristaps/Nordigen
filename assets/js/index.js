@@ -3,9 +3,9 @@ $(function() {
     let date_from = null;
     let date_to = null;
     let country = null;
-    let error_message = null;
+    let error_message = 'Something went wrong during the request';
 
-    $('#account-selector').on('change', function(){    
+    $('.form-selector').on('change', function(){    
         selected_account = $(this).val();
     });
 
@@ -38,9 +38,11 @@ $(function() {
             return;
         }
 
-        $("#results").html('')
+        $("#results").html('');
+        $("#loading").removeClass('d-none');
+        $('#accpunt-form :input').attr('disabled', true);
 
-        let data = {'account_id': selected_account}
+        let data = {'account_id': selected_account};
 
         if ($(this).attr('id') == 'button-transactions') {
             data['date_from'] = date_from;
@@ -66,30 +68,46 @@ $(function() {
             }
 
             if (data.error) {
-                error_message = data.error
-                displayErrorMessage(error_message);
+                displayErrorMessage(data.error);
+            }
+
+            if (data.status_code >= 400) {
+                let message = Object.values(data)[0];
+                message = message.summary ?? Object.values(message)[0];
+                message = message ?? error_message;
+                
+                displayErrorMessage(message);
             }
         },
         error: function(data){
-            error_message = 'Something went wrong during the request'
             displayErrorMessage(error_message);
         }
         });
 
         function displayTransactions(data) {
-            var event_data = '';
+            let html = '';
             
             $.each(data, function(key, dataType){
+                var event_data = '';
+                
                 $.each(dataType, function(index, value){
+                    let date = '';
+
+                    if (value.bookingDate) {
+                        date = value.bookingDate;
+                    } else if (value.valueDate) {
+                        date = value.valueDate
+                    }
+
                     event_data += '<tr>';
                     event_data += '<td>'+index+'</td>';
-                    event_data += '<td>'+value.bookingDate+'</td>';
+                    event_data += '<td>'+date+'</td>';
                     event_data += '<td>'+value.transactionAmount.amount+' '+value.transactionAmount.currency+'</td>';
                     event_data += '<td>'+value.remittanceInformationUnstructured+'</td>';
                     event_data += '</tr>';
                 });
 
-                $("#results").append(
+                html +=
                     '<h5>Account '+key+' transactions</h5>'+
                     '<table id="table-transactions-'+key+'" class="table table-striped table-hover">'+
                         '<thead class="table-light">'+
@@ -102,8 +120,11 @@ $(function() {
                         '</thead>'+
                         '<tbody id="table-body-transactions-'+key+'">'+event_data+'</tbody>'+
                     '</table>'
-                );
+                ;
+
             });
+
+            showResults(html);
         }
 
         function displayBalances(data) {
@@ -155,8 +176,14 @@ $(function() {
         function displayErrorMessage(error_message) {
             $("#results").html(
                 '<h5>Error</h5>'+
-                '<div class="font-weight-bold danger">'+error_message+'</div>'
+                '<div class="    text-danger">'+error_message+'</div>'
             )
+        }
+
+        function showResults(html) {
+            $('#accpunt-form :input').attr('disabled', false);
+            $("#loading").addClass('d-none');
+            $("#results").html(html);
         }
 
         return false;
