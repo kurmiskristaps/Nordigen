@@ -5,7 +5,7 @@ $(function() {
     let country = null;
     let error_message = 'Something went wrong during the request';
 
-    $('.form-selector').on('change', function(){    
+    $('#account-selector').on('change', function(){    
         selected_account = $(this).val();
     });
 
