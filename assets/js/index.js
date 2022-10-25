@@ -17,13 +17,17 @@ $(function() {
     $('#date-from-input').on('input', function(){ 
         if ($(this).val() != '') {
             date_from = $(this).val();
-        }   
+        } else {
+            date_from = null;
+        }
     });    
 
     $('#date-to-input').on('input', function(){    
         if ($(this).val() != '') {
             date_to = $(this).val();
-        } 
+        } else {
+            date_to = null;
+        }
     });    
 
     $('#country-input').on('change', function(){    
