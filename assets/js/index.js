@@ -51,7 +51,7 @@ $(function() {
         }
 
         $.ajax({
-        type: 'GET',
+        type: 'POST',
         url : url,
         data : data,
         success: function(data){
@@ -139,7 +139,7 @@ $(function() {
                 event_data += '</tr>';
             });
 
-            $("#results").html(
+           const html = 
                 '<h5>Account balances</h5>'+
                 '<table id="table-balances" class="table table-striped table-hover">'+
                     '<thead class="table-light">'+
@@ -152,7 +152,9 @@ $(function() {
                     '</thead>'+
                     '<tbody id="table-body-balances">'+event_data+'</tbody>'+
                 '</table>'
-            );
+            ;
+
+            showResults(html);
         }
 
         function displayDetails(data) {
@@ -165,19 +167,23 @@ $(function() {
             event_data += '<tr><td>Product:</td><td>'+data.product+'</td></tr>';
             event_data += '<tr><td>Resource Id:</td><td>'+data.resourceId+'</td></tr>';
 
-            $("#results").html(
+            const html =
                 '<h5>Account details</h5>'+
                 '<table id="table-balances" class="table table-striped table-hover">'+
                     '<tbody id="table-body-details">'+event_data+'</tbody>'+
                 '</table>'
-            );
+            ;
+
+            showResults(html);
         }
 
         function displayErrorMessage(error_message) {
-            $("#results").html(
+            const html =
                 '<h5>Error</h5>'+
-                '<div class="    text-danger">'+error_message+'</div>'
-            )
+                '<div class="font-weight-bold text-danger">'+error_message+'</div>'
+            ;
+
+            showResults(html);
         }
 
         function showResults(html) {

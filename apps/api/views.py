@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError
+from django.views.decorators.csrf import csrf_exempt
 from .tasks import fetch_transactions, fetch_balances, fetch_details, fetch_premium_transactions
+from .forms import GetTransactionsForm, GetAccountIdForm
 from nordigen import NordigenClient
 from nordigen_api.settings import USER_SECRET_ID, USER_SECRET_KEY
 from uuid import uuid4
@@ -23,21 +25,19 @@ def index(request: str):
 
 
 def auth(request: str, institution_id: str):
-    if (institution_id):
-        try:
-            init = client.initialize_session(
-                institution_id=institution_id,
-                redirect_uri="http://localhost:8000/index/details",
-                reference_id=str(uuid4())
-            )
+    try:
+        init = client.initialize_session(
+            institution_id=institution_id,
+            redirect_uri="http://localhost:8000/index/details",
+            reference_id=str(uuid4())
+        )
 
-            link = init.link
-            request.session['req_id'] = init.requisition_id
-        except Exception:
-            return render(request, 'error.html')
+        link = init.link
+        request.session['req_id'] = init.requisition_id
+    except Exception:
+        return render(request, 'error.html')
 
-        return redirect(link)
-    return redirect('/index')
+    return redirect(link)
 
 
 def details(request: str):
@@ -45,7 +45,6 @@ def details(request: str):
         return redirect('/index')
 
     try:
-        print('Requisition_id = ' + request.session['req_id'])
         accounts = client.requisition.get_requisition_by_id(
             requisition_id = request.session['req_id']
        )
@@ -66,83 +65,88 @@ def details(request: str):
             })
             
     except Exception as e:
-        print('%s' % str(e))
         return render(request, 'error.html')
 
     return render(request, 'account.html', {'accounts': accounts_data})
 
 
-def validate_account_id(account_id):
-    if not account_id or not isinstance(account_id, str):
-        raise ValidationError('No account id provided')
+def format_form_dates(form: GetTransactionsForm):
+    date_from = form['date_from']
+    date_to = form['date_to']
 
+    if date_from:
+        form['date_from'] = str(date_from)
 
-def validate_date(date):
-    if date and not isinstance(date, str):
-        raise ValidationError('Invalid date')
+    if date_to:
+        form['date_to'] = str(date_to)
 
+    return form
 
-def validate_dates(date_from, date_to):
-    for date in (date_from, date_to):
-        validate_date(date)
-    if date_from and date_to:
-        if date_from > date_to:
-            raise ValidationError('Date from cannot be larger than date to')
-
-
-def validate_country(country):
-    if country and (not isinstance(country, str) or len(country) != 2):
-        raise ValidationError('Invalid country format')
-
-
-def validate_transaction_variables(account_id, date_from, date_to, country):
-    validate_account_id(account_id)
-    validate_dates(date_from, date_to)
-    validate_country(country)
     
-
+@csrf_exempt
 def get_transactions(request):
-    account_id = request.GET.get('account_id')
-    date_from = request.GET.get('date_from')
-    date_to = request.GET.get('date_to')
-    country = request.GET.get('country')
+    try: 
+        if request.method == 'POST':
+            form = GetTransactionsForm(request.POST)
+
+            if form.is_valid():
+                form_data = format_form_dates(form.cleaned_data)
+                task = get_transactions_task(form_data, request.session['token']['access'])
+
+                return JsonResponse(task.get())
+            else:
+                error_string = ' '.join([' '.join(message for message in list) for list in list(form.errors.values())])
+                
+                return JsonResponse({'error': error_string})
+
+    except Exception as ex:
+        return JsonResponse({'error': 'Something went wrong'})
     
+
+def get_transactions_task(form: GetTransactionsForm, token):
+    account_id = form['account_id']
+    del form['account_id']
+
+    if form['country']:
+        task = fetch_premium_transactions.delay(account_id, form, token)
+    else:
+        del form['country']
+        task = fetch_transactions.delay(account_id, form, token)
+
+    return task
+
+@csrf_exempt
+def get_balances(request) -> JsonResponse:
     try:
-        validate_transaction_variables(account_id, date_from, date_to, country)
-
-        query_params = {}
+        if request.method == 'POST':
+            form = GetAccountIdForm(request.POST)
+            
+            if form.is_valid():
+                task = fetch_balances.delay(form.cleaned_data['account_id'], request.session['token']['access'])
         
-        if date_from:
-            query_params.update({'date_from': date_from})
-        if date_to:
-            query_params.update({'date_to': date_to})
+                return JsonResponse(task.get())
+            else:
+                error_string = ' '.join([' '.join(message for message in list) for list in list(form.errors.values())])
+                
+                return JsonResponse({'error': error_string})
 
-        if country:
-            query_params.update({'country': country})
-            task = fetch_premium_transactions.delay(account_id, query_params, request.session['token']['access'])
-        else:
-            task = fetch_transactions.delay(account_id, query_params, request.session['token']['access'])
-    except ValidationError as e:
-        return JsonResponse({'error': e.message})
     except Exception as ex:
         return JsonResponse({'error': 'Something went wrong'})
 
-    return JsonResponse(task.get())
-
-
-def get_balances(request) -> JsonResponse:
-    account_id = request.GET.get('account_id')
-    validate_account_id(account_id)
-
-    task = fetch_balances.delay(account_id, request.session['token']['access'])
-    
-    return JsonResponse(task.get())
-
-
+@csrf_exempt
 def get_details(request) -> JsonResponse:
-    account_id = request.GET.get('account_id')
-    validate_account_id(account_id)
+    try:
+        if request.method == 'POST':
+            form = GetAccountIdForm(request.POST)
+            
+            if form.is_valid():
+                task = fetch_details.delay(form.cleaned_data['account_id'], request.session['token']['access'])
+        
+                return JsonResponse(task.get())
+            else:
+                error_string = ' '.join([' '.join(message for message in list) for list in list(form.errors.values())])
+                
+                return JsonResponse({'error': error_string})
 
-    task = fetch_details.delay(account_id, request.session['token']['access'])
-    
-    return JsonResponse(task.get())
+    except Exception as ex:
+        return JsonResponse({'error': 'Something went wrong'})
