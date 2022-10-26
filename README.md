@@ -7,7 +7,7 @@ To start the project:
 
     - run "docker-compose up" to start the Django server, Redis, and Celery 
 
-    - run "npm install" and "npm run build" to build the frontend dependencies
+    - run "npm install" and "npm run build" to build the frontend dependencies with Webpack. Sidenote: I left the script to run on developer mode, since this is more for testing
 
 Afterwards the project will be accessible at localhost:8000/index
 
