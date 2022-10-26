@@ -25,6 +25,7 @@ The responses are then processed by jQuery and rendered in the template.
 
 
 Potential improvements:
+
     - As this was a small project, and I wanted to better understand both how django templates and jQuery work, I opted on not using a JS framework like Vue for frontend. This 100% could be improved and would make adding new changes, modal views etc. much simpler.
 
     - Passing the data to forms.py using a data model, so no manual data formatting has to take place afterwards, like with date_from/to.
