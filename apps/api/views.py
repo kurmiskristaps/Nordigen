@@ -1,7 +1,5 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
-from django.core.exceptions import ValidationError
-from django.views.decorators.csrf import csrf_exempt
 from .tasks import fetch_transactions, fetch_balances, fetch_details, fetch_premium_transactions
 from .forms import GetTransactionsForm, GetAccountIdForm
 from nordigen import NordigenClient
@@ -17,145 +15,145 @@ client = NordigenClient(
 generic_error_message = 'Something went wrong'
 post_error_message = 'Request method must be "POST"'
 
+class IndexPage():
+    def index(request: str):
+        try:
+            request.session['token'] = client.generate_token()
+            institutions = client.institution.get_institutions()
+        except Exception:
+            return render(request, 'error.html')
 
-def index(request: str):
-    try:
-        request.session['token'] = client.generate_token()
-        institutions = client.institution.get_institutions()
-    except Exception:
-        return render(request, 'error.html')
+        return render(request, 'index.html', {'banks': institutions})
 
-    return render(request, 'index.html', {'banks': institutions})
+class Authentication():
+    def auth(request: str, institution_id: str):
+        try:
+            init = client.initialize_session(
+                institution_id=institution_id,
+                redirect_uri="http://localhost:8000/index/details",
+                reference_id=str(uuid4())
+            )
 
+            link = init.link
+            request.session['req_id'] = init.requisition_id
+        except Exception:
+            return render(request, 'error.html')
 
-def auth(request: str, institution_id: str):
-    try:
-        init = client.initialize_session(
-            institution_id=institution_id,
-            redirect_uri="http://localhost:8000/index/details",
-            reference_id=str(uuid4())
+        return redirect(str(link))
+
+class DetailView():
+    def details(request: str):
+        if len(request.session['req_id']) == 0:
+            return redirect('/index')
+
+        try:
+            accounts = client.requisition.get_requisition_by_id(
+                requisition_id = request.session['req_id']
         )
 
-        link = init.link
-        request.session['req_id'] = init.requisition_id
-    except Exception:
-        return render(request, 'error.html')
+            request.session['ref'] = request.GET.get('ref')
+            request.session['accounts'] = accounts
+            accounts_data = []
 
-    return redirect(str(link))
+            for id in accounts['accounts']:
+                account = client.account_api(id)
+                metadata = account.get_metadata()
+                details = account.get_details()
 
-
-def details(request: str):
-    if len(request.session['req_id']) == 0:
-        return redirect('/index')
-
-    try:
-        accounts = client.requisition.get_requisition_by_id(
-            requisition_id = request.session['req_id']
-       )
-
-        request.session['ref'] = request.GET.get('ref')
-        request.session['accounts'] = accounts
-        accounts_data = []
-
-        for id in accounts['accounts']:
-            account = client.account_api(id)
-            metadata = account.get_metadata()
-            details = account.get_details()
-
-            accounts_data.append({
-                "id": id,
-                "metadata": metadata,
-                "details": details,
-            })
-            
-    except Exception as e:
-        return render(request, 'error.html')
-
-    return render(request, 'account.html', {'accounts': accounts_data})
-
-
-def format_form_dates(form: GetTransactionsForm):
-    date_from = form['date_from']
-    date_to = form['date_to']
-
-    if date_from:
-        form['date_from'] = str(date_from)
-
-    if date_to:
-        form['date_to'] = str(date_to)
-
-    return form
-
-    
-def get_transactions(request):
-    try: 
-        if request.method == 'POST':
-            form = GetTransactionsForm(request.POST)
-
-            if form.is_valid():
-                form_data = format_form_dates(form.cleaned_data)
-                task = get_transactions_task(form_data, request.session['token']['access'])
-
-                return JsonResponse(task.get())
-            else:
-                error_string = ' '.join([' '.join(message for message in list) for list in list(form.errors.values())])
+                accounts_data.append({
+                    "id": id,
+                    "metadata": metadata,
+                    "details": details,
+                })
                 
-                return JsonResponse({'error': error_string})
-        else:
-            return JsonResponse({'error': post_error_message}, status = 403)
+        except Exception as e:
+            return render(request, 'error.html')
 
-    except Exception as ex:
-        return JsonResponse({'error': generic_error_message}, status = 500)
-    
-
-def get_transactions_task(form: GetTransactionsForm, token):
-    account_id = form['account_id']
-    del form['account_id']
-
-    if form['country']:
-        task = fetch_premium_transactions.delay(account_id, form, token)
-    else:
-        del form['country']
-        task = fetch_transactions.delay(account_id, form, token)
-
-    return task
+        return render(request, 'account.html', {'accounts': accounts_data})
 
 
-def get_balances(request) -> JsonResponse:
-    try:
-        if request.method == 'POST':
-            form = GetAccountIdForm(request.POST)
-            
-            if form.is_valid():
-                task = fetch_balances.delay(form.cleaned_data['account_id'], request.session['token']['access'])
+    def format_form_dates(form: GetTransactionsForm):
+        date_from = form['date_from']
+        date_to = form['date_to']
+
+        if date_from:
+            form['date_from'] = str(date_from)
+
+        if date_to:
+            form['date_to'] = str(date_to)
+
+        return form
+
         
-                return JsonResponse(task.get())
+    def get_transactions(request):
+        try: 
+            if request.method == 'POST':
+                form = GetTransactionsForm(request.POST)
+
+                if form.is_valid():
+                    form_data = DetailView.format_form_dates(form.cleaned_data)
+                    task = DetailView.get_transactions_task(form_data, request.session['token']['access'])
+
+                    return JsonResponse(task.get())
+                else:
+                    error_string = ' '.join([' '.join(message for message in list) for list in list(form.errors.values())])
+                    
+                    return JsonResponse({'error': error_string})
             else:
-                error_string = ' '.join([' '.join(message for message in list) for list in list(form.errors.values())])
-                
-                return JsonResponse({'error': error_string})
-        else:
-            return JsonResponse({'error': post_error_message}, status = 403)
+                return JsonResponse({'error': post_error_message}, status = 403)
 
-    except Exception as ex:
-        return JsonResponse({'error': generic_error_message}, status = 500)
-
-
-def get_details(request) -> JsonResponse:
-    try:
-        if request.method == 'POST':
-            form = GetAccountIdForm(request.POST)
-            
-            if form.is_valid():
-                task = fetch_details.delay(form.cleaned_data['account_id'], request.session['token']['access'])
+        except Exception as ex:
+            return JsonResponse({'error': generic_error_message}, status = 500)
         
-                return JsonResponse(task.get())
-            else:
-                error_string = ' '.join([' '.join(message for message in list) for list in list(form.errors.values())])
-                
-                return JsonResponse({'error': error_string})
-        else:
-            return JsonResponse({'error': post_error_message}, status = 403)
 
-    except Exception as ex:
-        return JsonResponse({'error': generic_error_message}, status = 500)
+    def get_transactions_task(form: GetTransactionsForm, token):
+        account_id = form['account_id']
+        del form['account_id']
+
+        if form['country']:
+            task = fetch_premium_transactions.delay(account_id, form, token)
+        else:
+            del form['country']
+            task = fetch_transactions.delay(account_id, form, token)
+
+        return task
+
+
+    def get_balances(request) -> JsonResponse:
+        try:
+            if request.method == 'POST':
+                form = GetAccountIdForm(request.POST)
+                
+                if form.is_valid():
+                    task = fetch_balances.delay(form.cleaned_data['account_id'], request.session['token']['access'])
+            
+                    return JsonResponse(task.get())
+                else:
+                    error_string = ' '.join([' '.join(message for message in list) for list in list(form.errors.values())])
+                    
+                    return JsonResponse({'error': error_string})
+            else:
+                return JsonResponse({'error': post_error_message}, status = 403)
+
+        except Exception as ex:
+            return JsonResponse({'error': generic_error_message}, status = 500)
+
+
+    def get_details(request) -> JsonResponse:
+        try:
+            if request.method == 'POST':
+                form = GetAccountIdForm(request.POST)
+                
+                if form.is_valid():
+                    task = fetch_details.delay(form.cleaned_data['account_id'], request.session['token']['access'])
+            
+                    return JsonResponse(task.get())
+                else:
+                    error_string = ' '.join([' '.join(message for message in list) for list in list(form.errors.values())])
+                    
+                    return JsonResponse({'error': error_string})
+            else:
+                return JsonResponse({'error': post_error_message}, status = 403)
+
+        except Exception as ex:
+            return JsonResponse({'error': generic_error_message}, status = 500)
