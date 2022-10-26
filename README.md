@@ -17,8 +17,9 @@ These requests will then be processed and validated, and Celery workers will mak
 The responses are then processed by jQuery and rendered in the template.
 
 Potential improvements:
-    - CSRF validation for all POST requests to improve security.
     - As this was a small project, and I wanted to better understand both how django templates and jQuery work, I opted on not using a JS framework like Vue for frontend. This 100% could be improved and would make adding new changes, modal views etc. much simpler.
     - Passing the data to forms.py using a data model, so no manual data formatting has to take place afterwards, like with date_from/to.
     - Adding a better DB to django like Postgres so better functionality could be added to this project later down the line.
     - A way to check if the user has access to premium products, before displaying the country input field for transaction retrieval, otherwise some user input is required to know if such an option should be accessible. This could be achieved by adding some "check_premium" call to Nordigen, but I could not find one. Making a direct call to accounts/premium/../transactions beforehand and checking the response would not be wise.
+    - Switching all imports used templates to npm dependencies so they are not relying on other sources to be working / accessible
+    - Testing could be improved, since it does not cover all possible cases for user input and celery tasks.

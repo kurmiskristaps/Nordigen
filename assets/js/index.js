@@ -46,6 +46,7 @@ $(function() {
         $("#loading").removeClass('d-none');
         $('#accpunt-form :input').attr('disabled', true);
 
+        const csrftoken = $("[name=csrfmiddlewaretoken]").val();
         let data = {'account_id': selected_account};
 
         if ($(this).attr('id') == 'button-transactions') {
@@ -56,8 +57,11 @@ $(function() {
 
         $.ajax({
         type: 'POST',
-        url : url,
-        data : data,
+        url: url,
+        headers: {
+            "X-CSRFToken": csrftoken
+        }, 
+        data: data,
         success: function(data){
             if (data.transactions) {
                 displayTransactions(data.transactions);

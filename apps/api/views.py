@@ -14,6 +14,10 @@ client = NordigenClient(
     secret_key=USER_SECRET_KEY
 )
 
+generic_error_message = 'Something went wrong'
+post_error_message = 'Request method must be "POST"'
+
+
 def index(request: str):
     try:
         request.session['token'] = client.generate_token()
@@ -37,7 +41,7 @@ def auth(request: str, institution_id: str):
     except Exception:
         return render(request, 'error.html')
 
-    return redirect(link)
+    return redirect(str(link))
 
 
 def details(request: str):
@@ -83,7 +87,6 @@ def format_form_dates(form: GetTransactionsForm):
     return form
 
     
-@csrf_exempt
 def get_transactions(request):
     try: 
         if request.method == 'POST':
@@ -98,9 +101,11 @@ def get_transactions(request):
                 error_string = ' '.join([' '.join(message for message in list) for list in list(form.errors.values())])
                 
                 return JsonResponse({'error': error_string})
+        else:
+            return JsonResponse({'error': post_error_message}, status = 403)
 
     except Exception as ex:
-        return JsonResponse({'error': 'Something went wrong'})
+        return JsonResponse({'error': generic_error_message}, status = 500)
     
 
 def get_transactions_task(form: GetTransactionsForm, token):
@@ -115,7 +120,7 @@ def get_transactions_task(form: GetTransactionsForm, token):
 
     return task
 
-@csrf_exempt
+
 def get_balances(request) -> JsonResponse:
     try:
         if request.method == 'POST':
@@ -129,11 +134,13 @@ def get_balances(request) -> JsonResponse:
                 error_string = ' '.join([' '.join(message for message in list) for list in list(form.errors.values())])
                 
                 return JsonResponse({'error': error_string})
+        else:
+            return JsonResponse({'error': post_error_message}, status = 403)
 
     except Exception as ex:
-        return JsonResponse({'error': 'Something went wrong'})
+        return JsonResponse({'error': generic_error_message}, status = 500)
 
-@csrf_exempt
+
 def get_details(request) -> JsonResponse:
     try:
         if request.method == 'POST':
@@ -147,6 +154,8 @@ def get_details(request) -> JsonResponse:
                 error_string = ' '.join([' '.join(message for message in list) for list in list(form.errors.values())])
                 
                 return JsonResponse({'error': error_string})
+        else:
+            return JsonResponse({'error': post_error_message}, status = 403)
 
     except Exception as ex:
-        return JsonResponse({'error': 'Something went wrong'})
+        return JsonResponse({'error': generic_error_message}, status = 500)
