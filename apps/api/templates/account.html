@@ -37,39 +37,39 @@
 
             <div class="col-12 my-3 border-bottom"></div>
             
-            <div>
+            <div class="d-md-flex">
                 <button 
                     id="button-transactions" 
-                    class="get-data-button btn btn-large btn-primary col-md-2 m-2"
+                    class="get-data-button btn btn-large btn-primary col-md-3 mr-2 my-2"
                     data-url="{% url 'get-transactions' %}">
                     Get transactions
                 </button>
-                <div class="input-group date datepickers col-md-3 float-right m-2" id="date-to" data-target-input="nearest">
+                <div class="input-group date datepickers col-md-3 align-self-baseline px-0 mr-2 my-2" id="date-from" data-target-input="nearest">
+                    <input id="date-from-input d-md-flex" type="text" placeholder="from" class="form-control datetimepicker-input" data-target="#date-from"/>
+                    <div class="input-group-append" data-target="#date-from" data-toggle="datetimepicker">
+                      <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                    </div>
+                </div>
+                <div class="input-group date datepickers col-md-3 align-self-baseline px-0 mr-2 my-2" id="date-to" data-target-input="nearest">
                     <input id="date-to-input" type="text" placeholder="to" class="form-control datetimepicker-input" data-target="#date-to"/>
                     <div class="input-group-append" data-target="#date-to" data-toggle="datetimepicker">
                       <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                     </div>
                 </div>
-                <div class="input-group date datepickers col-md-3 float-right m-2" id="date-from" data-target-input="nearest">
-                    <input id="date-from-input" type="text" placeholder="from" class="form-control datetimepicker-input" data-target="#date-from"/>
-                    <div class="input-group-append" data-target="#date-from" data-toggle="datetimepicker">
-                      <div class="input-group-text"><i class="fa fa-calendar"></i></div>
-                    </div>
-                </div>
 
-                <input type="text" class="form-control col-md-3 float-right m-2" id="country-input" placeholder="ISO-2 country">
+                <input type="text" class="form-control col-md-2 px-6 mr-2 my-2" id="country-input" placeholder="ISO-2 country">
 
             </div>
             <div>
                 <button 
                     id="button-balances" 
-                    class="get-data-button btn btn-large btn-primary col-md-2 m-2"
+                    class="get-data-button btn btn-large btn-primary col-md-2 mr-2 my-2"
                     data-url="{% url 'get-balances' %}">
                     Get balances
                 </button>
                 <button 
                     id="button-details" 
-                    class="get-data-button btn btn-large btn-primary col-md-2 m-2"
+                    class="get-data-button btn btn-large btn-primary col-md-2 mr-2 my-2"
                     data-url="{% url 'get-details' %}">
                     Get details
                 </button>
