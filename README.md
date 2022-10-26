@@ -3,8 +3,8 @@ The Nordigen homework project.
 Made in Django, bundled with Docker and using npm.
 To start the project:
     - add a .env file, containing USER_SECRET_ID and USER_SECRET_KEY
-    - run "docker-compose up" tos start the server, Redis, Postgres and Celery 
-    - run "npm run build" to get the frontend dependencies
+    - run "docker-compose up" to start the Django server, Redis, and Celery 
+    - run "npm run build" to build the frontend dependencies
 
 Afterwards the project will be accessible at localhost:8000/index
 
